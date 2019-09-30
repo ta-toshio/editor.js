@@ -58,6 +58,11 @@ export interface EditorConfig {
   minHeight?: number;
 
   /**
+   * Max Number of blocks
+   */
+  maxNumOfBlocks?: number|null;
+
+  /**
    * Fires when Editor is ready to work
    */
   onReady?(): void;

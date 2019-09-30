@@ -17,6 +17,7 @@ import {BlockTool, BlockToolConstructable, BlockToolData, PasteEvent, ToolConfig
  * @typedef {BlockManager} BlockManager
  * @property {Number} currentBlockIndex - Index of current working block
  * @property {Proxy} _blocks - Proxy for Blocks instance {@link Blocks}
+ * @property {Number|null} _maxNumOfBlocks - Max Number of blocks
  */
 export default class BlockManager extends Module {
 
@@ -153,6 +154,14 @@ export default class BlockManager extends Module {
   private _blocks: Blocks = null;
 
   /**
+   * Max number of blocks
+   *
+   * @type {number}
+   * @private
+   */
+  private _maxNumOfBlocks: number|null = null;
+
+  /**
    * Should be called after Editor.UI preparation
    * Define this._blocks property
    *
@@ -161,6 +170,8 @@ export default class BlockManager extends Module {
   public async prepare() {
     const blocks = new Blocks(this.Editor.UI.nodes.redactor);
     const { BlockEvents, Shortcuts } = this.Editor;
+
+    this._maxNumOfBlocks = this.config.maxNumOfBlocks;
 
     /**
      * We need to use Proxy to overload set/get [] operator.
@@ -226,7 +237,7 @@ export default class BlockManager extends Module {
    * @param {number} index - index where to insert new Block
    * @param {boolean} needToFocus - flag shows if needed to update current Block index
    *
-   * @return {Block}
+   * @return {Block|null}
    */
   public insert(
     toolName: string = this.config.initialBlock,
@@ -234,7 +245,10 @@ export default class BlockManager extends Module {
     settings: ToolConfig = {},
     index: number = this.currentBlockIndex + 1,
     needToFocus: boolean = true,
-  ): Block {
+  ): Block | null {
+    if (this._maxNumOfBlocks && index >= this._maxNumOfBlocks) {
+      return null;
+    }
     const block = this.composeBlock(toolName, data, settings);
 
     this._blocks[index] = block;
